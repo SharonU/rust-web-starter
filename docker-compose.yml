@@ -1,6 +1,15 @@
 version: "3"
 
 services:
+  nats:
+    image: 'nats:0.8.0'
+    entrypoint: "/gnatsd -DV"
+    expose:
+      - "4222"
+    ports:
+      - "8222:8222"
+    hostname: nats
+
   web:
     build: ./web
     volumes:
@@ -9,31 +18,32 @@ services:
       - "3000:3000"
     command: bash -c "yarn && yarn start"
     links:
-      - api_server
+      - api
 
-  api_server:
-    build: ./api_server
-    ports: 
+  processor:
+    build: ./processor
+    volumes:
+      - ./processor:/usr/src/app
+      - ./shared:/usr/src/shared
+    links:
+      - nats
+    environment:
+      - "NATS_ADDRESS=nats://nats:4222"
+    depends_on:
+      - nats
+    command: bash -c "bash ./wait-for-it.sh nats:4222 -- cargo watch -x run"
+
+  api:
+    build: ./api
+    ports:
       - "3001:3001"
     volumes:
-      - ./api_server:/usr/src/app
+      - ./api:/usr/src/app
+      - ./shared:/usr/src/shared
     links:
-      - db
-    # diesel infer_schema macro gives warnings with this flag.
-    # environment:
-    #   - CARGO_INCREMENTAL=1
-    command: bash -c "bash ./wait-for-it.sh db:5432 -q -- diesel setup && cargo watch -x run"
-
-  db:
-    image: "postgres:9"
-    ports: 
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data/pgdata
+      - nats
     environment:
-      POSTGRES_PASSWORD: supersecretpassword
-      PGDATA: /var/lib/postgresql/data/pgdata
-
-# cargo will try to redownload packages @ docker-compose up so store them here.
-volumes:
-  pgdata: {}
+      - "NATS_ADDRESS=nats://nats:4222"
+    depends_on:
+      - nats
+    command: bash -c "bash ./wait-for-it.sh nats:4222 -- cargo watch -x run"

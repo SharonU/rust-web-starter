@@ -5,6 +5,7 @@
   "dependencies": {
     "react": "^16.5.0",
     "react-dom": "^16.5.0",
+    "react-tabs": "3.0.0",
     "react-scripts-ts": "2.17.0"
   },
   "scripts": {
@@ -15,7 +16,7 @@
   },
   "proxy": {
     "/api": {
-      "target": "http://api_server:3001/",
+      "target": "http://api:3001/",
       "ws": true
     }
   },
@@ -24,6 +25,7 @@
     "@types/node": "^10.9.4",
     "@types/react": "^16.4.13",
     "@types/react-dom": "^16.0.7",
+    "@types/react-tabs": "2.3.1",
     "prettier": "^1.14.2",
     "tslint-config-prettier": "^1.15.0",
     "typescript": "^3.0.3"

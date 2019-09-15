@@ -1,0 +1,8 @@
+[package]
+name = "test_shared"
+version = "0.0.1"
+
+[dependencies]
+serde = "1.0.77"
+serde_derive = "1.0.99"
+serde_json = "*"
